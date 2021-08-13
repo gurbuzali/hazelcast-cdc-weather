@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Weather</title>
+    <script src="https://cdn.jsdelivr.net/npm/vue@2/dist/vue.js"></script>
+</head>
+<body>
+<div id="app">
+
+    <p v-if="errors.length">
+        <ul>
+            <li v-for="error in errors">{{ error }}</li>
+        </ul>
+    </p>
+    <p>
+        <label for="city">City: </label>
+        <input id="city" type="text" name="city" v-model="city"/>
+    </p>
+    <p>
+        <button onclick="app.query(true)">Go!</button>
+    </p>
+
+    <table>
+        <thead v-if="results.length">
+        <tr>
+            <td>City</td>
+            <td>Country</td>
+            <td>Today</td>
+            <td>Tomorrow</td>
+        </tr>
+        </thead>
+        <tbody>
+        <tr v-for="result in results">
+            <td>{{ result.city }}</td>
+            <td>{{ result.country }}</td>
+            <td>{{ result.today }}</td>
+            <td>{{ result.tomorrow }}</td>
+        </tr>
+        </tbody>
+    </table>
+</div>
+
+<script>
+        const app = new Vue({
+          el: '#app',
+          data: {
+            city: '',
+            errors: [],
+            results: []
+          },
+          methods:{
+            resetParams: function () {
+              this.errors = [];
+              this.results = [];
+            },
+            query: function (shouldReset) {
+              if(shouldReset) {
+                this.resetParams();
+              }
+
+              if (this.city === '') {
+                this.errors.push('Enter a city name.');
+              }
+              if (this.errors.length === 0) {
+                fetch('/query?city=' + encodeURIComponent(this.city))
+                .then(async res => {
+                  let response = await res.json();
+                  if (res.status === 400) {
+                    this.errors.push(response);
+                  } else {
+                    this.results.push(response);
+                  }
+                });
+              }
+            }
+          }
+        })
+    </script>
+</body>
+</html>
